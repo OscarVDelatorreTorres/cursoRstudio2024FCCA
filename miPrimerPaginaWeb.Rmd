@@ -174,8 +174,18 @@ También podemos filtrar o indizar un objeto data.frame con el nombre de la colu
 Datos$Origen
 ```
 
-Ahora, siquieri extraer solo las filas 3 a 10 de esa columna:
+Ahora, si quiero extraer solo las filas 3 a 10 de esa columna:
 
 ```{r}
 Datos$Origen[3:10]
 ```
+
+# Cambiando el tipo o contenido de partes de un objeto
+
+En esta sección aprendremos cómo modificar partes como columnas de un objeto data.frame (sin que sea exclusivo de este tipo de objeto) con operaciones sencillas. Como ejemplo, cambiaremos la columna Fecha del objeto Datos para que deje de ser una secuencia de números de fecha de Excel y se convierta en un objeto tipo Date con la función as.Date():
+
+```{r}
+# Convertimos la columna Fecha que tiene un origen de Excel el 30 de diciembre de 1899 para que quede la fecha correcta:
+Datos$Fecha=as.Date(Datos$Fecha,origin="1899-12-30")
+```
+
