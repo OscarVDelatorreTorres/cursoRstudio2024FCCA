@@ -76,9 +76,29 @@ preciosPromedio=Datos %>% group_by(Fecha) %>% summarize(PrecioPromedio=mean(Prec
 datatable(preciosPromedio)
 ```
 
-Podemos generar una gráfica simple y fea como la siguiente:
+# Gráficas interactivas con plotly
+
+## Gráficas por defecto en R
+
+Podemos generar una gráfica simple (y no muy bonita) como la siguiente:
 ```{r}
-plot(x=preciosPromedio$Fecha,y=preciosPromedio$PrecioPromedio,type="l")
+plot(x=preciosPromedio$Fecha,y=preciosPromedio$PrecioPromedio,type="l",col="orange",
+     main="Precio del maíz",xlab="Fecha",ylab="Precio promedio")
 ```
 
+# Gráficas interactivas con plotly
 
+Ahora se puede utilizar la librería plotly:
+```{r}
+# Se crea el objeto tipo plotly:
+grafica=plot_ly()
+grafica=add_trace(grafica,data=preciosPromedio,
+                  x=~Fecha,y=~PrecioPromedio,
+                  type="scatter",mode="lines",
+                  line=list(color="orange")
+                  )
+grafica=layout(grafica,title = "Precio promedio del arroz (todos los tipos)",
+         xaxis = list(title = "Fecha"),
+         yaxis = list (title = "Precio ($)")
+         )
+grafic
