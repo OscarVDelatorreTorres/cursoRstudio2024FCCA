@@ -12,5 +12,5 @@ knitr::opts_chunk$set(echo = TRUE)
 Esta es la página principal de mi ejemplo de cómo publicar páginas web con GitHub y Rstudio.
 
 Estas son algunas de las páginas que también hemos cargado pero que requieren ser invocadas por su nombre:
-
+ 
 [Página web del ejercicio del análisis del precio del arroz mexicano](https://oscarvdelatorretorres.github.io/cursoRstudio2024FCCA/analisisPrecioArrozMX.html)
