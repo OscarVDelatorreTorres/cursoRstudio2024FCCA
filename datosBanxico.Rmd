@@ -1,0 +1,174 @@
+---
+title: "Extracción y análisis de datos desde Banxico"
+author: "Dr. Oscar V. De la Torre Torres"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(siebanxicor)
+library(dplyr)
+library(plotly)
+library(DT)
+
+# Este es mi token de Banxico SIE-API:
+token="6e3148e94cb64e275fba419d765c38efb1fcb1455f5e963aef3119fee50843b7"
+# Activamos el token y hacemos login con Banxico:
+setToken(token)
+```
+
+# Introducción
+
+En estas notas en línea se hace un breve ejemplo de cómo extraer datos desde el Banco de México (Banxico) y se hace un análisis de los datos obtenidos. Esto junto con una práctica de cómo graficar los mismos.
+
+Como ejercicio, se extraerá información histórica de la tasa de CETES en mercado secundario, así como del tipo de cambio FIX y se harán gráficas y tablas de análisis a manera de ejemplo. Esto con las siguientes librerías:
+
+1. plotly
+2. dplyr
+3. DT
+4. banxicoR
+
+# Extracción de datos desde Banxico
+
+Para extraer datos desde Banxico, se requiere de una API key que se obtiene registrándose en la página de Banxico. Una vez obtenida la API key, se puede hacer uso de la función `getSeries` de la librería `banxicoR` para extraer los datos. A continuación se muestra un ejemplo de cómo extraer la tasa de CETES a 28 días en mercado secundario y el tipo de cambio FIX.
+
+Tipo de cambio FIX: `SF43718`
+```{r}
+# Extracción de datos del tipo de cambio FIX:
+tcFIX = getSeriesData("SF43718", startDate = "2003-05-16", endDate = "2024-07-09")
+tcFIX=as.data.frame(tcFIX$SF43718)
+```
+
+Cetes de 28 días: `SF45470`
+```{r}
+# Extracción de datos de los CETES de 28 días en mercado secundario:
+cetes28 = getSeriesData("SF45470", startDate = "2003-05-16", endDate = "2024-07-09")
+cetes28=as.data.frame(cetes28$SF45470)
+```
+
+# Análisis de datos
+
+Ahora realizamos una gráfica histórica tanto de la tasa de CETES a 28 días en mercado secundario como del tipo de cambio FIX. 
+
+## Gráficas históricas
+
+Gráfica de la tasa de CETES a 28 días en mercado secundario:
+
+```{r}
+# Creamos el objeto tipo plotly:
+figCETES=plot_ly()
+# Añadimos la serie de datos de los CETES:
+figCETES=add_trace(figCETES, x=~date, y=~value, data=cetes28,
+                   name="CETES 28 días", type="scatter", mode="lines")
+# Le damos formato a nuestra gráfica:
+figCETES=layout(figCETES, 
+                title="Tasa de CETES a 28 días en mercado secundario",
+                xaxis=list(title="Fecha (diario)"), 
+                yaxis=list(title="Tasa de interés (%)"))
+figCETES
+```
+
+Gráfica del tipo de cambio FIX:
+
+```{r}
+# Creamos el objeto tipo plotly:
+figFIX=plot_ly()
+# Añadimos la serie de datos del tipo de cambio FIX:
+figFIX=add_trace(figFIX, x=~date, y=~value, data=tcFIX,
+                   name="T.C. FIX", type="scatter", mode="lines")
+# Le damos formato a nuestra gráfica:
+figFIX=layout(figFIX, 
+                title="Tipo de cambio FIX",
+                xaxis=list(title="Fecha (diario)"), 
+                yaxis=list(title="Pesos por dólar"))
+figFIX
+```
+
+Ahora presentamos las dos gráficas previas en una sola:
+
+```{r}
+# Creamos la gráfica con sus sub gráficas:
+figuraTotal= subplot(figFIX, figCETES, nrows=2)
+# Sobreescribimos el título general de la gráfica a nuestor gusto
+figuraTotal=layout(figuraTotal,title="Histórico de T.C. FIX y CETES de 28d")
+# Imprimimos la gráfica final:
+figuraTotal
+```
+
+Ahora hacemos nuestro análisis con una gráfica de dispersión:
+
+```{r}
+# Creamos la gráfica de dispersión:
+figuraDispersion=plot_ly()
+# Se agregan los puntos:
+figuraDispersion=add_trace(figuraDispersion,
+                           x=~cetes28$value, y=~tcFIX$value,
+                           type="scatter", mode="markers")
+# Se le da formato a la gráfica:
+figuraDispersion=layout(figuraDispersion,
+                        title="Comparativo de CETES v.s. T.C. FIX",
+                        xaxis=list(title="CETES 28 días (%)"),
+                        yaxis=list(title="Tipo de cambio FIX"))
+# imprimimos la gráfica:
+figuraDispersion
+```
+
+## Análisis de datos y modelo de regresión
+
+Primero fusionamos los datos de los CETES de 28 días con el tipo de cambio FIX. Esto utilizando la función merge de la librería dplyr:
+
+```{r}
+# Generamos la tabla general fusionada con la función merge:
+tablaGeneral=merge(cetes28, tcFIX, by="date")
+# Cambiamos los nombres de las columnas:
+colnames(tablaGeneral)=c("Fecha","cetes28","tcFIX")
+
+# Mostramos la tabla con la función datatable de la librería DT para que sea presentada en una página web:
+datatable(tablaGeneral,
+          colnames=c("Fecha","Cetes 28 días","T.C. FIX"),
+          caption="Valores históricos de las variables de interés"
+          )
+```
+
+Ahora realizamos el análisis de regresión para la siguiente ecuación:
+
+$$tcFIX_t=\alpha+\beta cetes28d$$
+```{r}
+# Realizamos el análisis de regresión:  
+regresion=lm("tcFIX~cetes28", data=tablaGeneral)
+# CReamos un pronóstico del Tipo de cambio, dados los valores de tasa de CETEs de 28 días:
+pronostico= regresion$fitted.values
+# Mostramos los resultados de la regresión:
+datatable( summary(regresion)$coefficients )
+```
+Vemos la gráfica de la regresión:
+
+```{r}
+# Creamos la gráfica de dispersión:
+figuraDispersion=plot_ly()
+
+# Se agregan los puntos:
+figuraDispersion=add_trace(figuraDispersion,
+                           x=~cetes28$value, y=~tcFIX$value,
+                           type="scatter", mode="markers",
+                           name="Valores observados")
+
+# Se agrega la línea de regresión:
+figuraDispersion=add_trace(figuraDispersion,
+                           x=~cetes28$value, y=pronostico,
+                           type="scatter", mode="lines+markers",
+                           name="Valores estimados")
+
+# Se le da formato a la gráfica:
+figuraDispersion=layout(figuraDispersion,
+                        title="Comparativo de CETES v.s. T.C. FIX",
+                        xaxis=list(title="CETES 28 días (%)"),
+                        yaxis=list(title="Tipo de cambio FIX"))
+# imprimimos la gráfica:
+figuraDispersion
+```
+
+
+
+
