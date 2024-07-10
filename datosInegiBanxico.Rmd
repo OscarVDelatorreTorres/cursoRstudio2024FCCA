@@ -1,0 +1,62 @@
+---
+title: '"Extracción de datos de INEGI y Banxico"'
+author: "Dr. Oscar V. De la Torre Torres"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(siebanxicor)
+library(dplyr)
+library(plotly)
+library(DT)
+
+# Este es mi token de Banxico SIE-API:
+token="6e3148e94cb64e275fba419d765c38efb1fcb1455f5e963aef3119fee50843b7"
+# Activamos el token y hacemos login con Banxico:
+setToken(token)
+
+# Cargo la función datosINEGI desde el repositorio de GitHub:
+source("https://raw.githubusercontent.com/OscarVDelatorreTorres/datosINEGI/main/datosINEGI.R")
+tokenINEGI="5d0750aa-9434-f980-90bb-9559cb8dc581"
+```
+
+# Introducción
+
+En estas notas en línea aprenderemos a descargar datos del INEGI y del Banxico en conjunto y fusionaremos los mismos en una misma tabla de datos de entrada.
+
+Comenzamos descargando informacion del ITAE desde la base de datos del INEGI:
+
+```{r}
+# Definimos los indicadores que queremos descargar:
+id=c(741274,539260,1273) #estos son los códigos del ITAE michoacano, de la UMA y la producción de barriles de petróleo crudo.
+
+# Definimos, para cada indicador el banco de datos al que pertenece:
+bancoDatos=c("BIE","BISE","BIE")
+
+# Definimos si queremos que extraiga toda la serie de tiempo (TRUE) o solamente el daot más reciente (FALSE):
+serieTiempo=c(TRUE,FALSE,TRUE)
+
+# Se ejecuta la función con los objetos de token, vector de Id de datos, los banco de datos y si deseamos, en cada uno, extraer la serie de tiempo o la observación más reciente:
+datos=datosINEGI(tokenINEGI,id,bancoDatos,serieTiempo)
+
+```
+
+Ahora extraemos los datos del ITAE y de la producción petrolera para convertirlos en una sola tabla de datos. 
+
+```{r}
+# Extraemos los datos del ITAE:
+itae=datos[["741274"]]
+# extraemos los datos de la producción petrolera:
+petroleo=datos[["1273"]]
+
+# Convertimos a tipo numérico las columnas value de ambas tablas de datos:
+itae$value=as.numeric(itae$value)
+petroleo$value=as.numeric(petroleo$value)
+
+# Convertimos a formato fecha las columnas date de ambas tablas de datos:
+itae$date=as.Date(petroleo$date)
+
+```
+

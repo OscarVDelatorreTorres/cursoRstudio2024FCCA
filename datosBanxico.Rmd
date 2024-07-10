@@ -11,7 +11,8 @@ library(siebanxicor)
 library(dplyr)
 library(plotly)
 library(DT)
-
+library(stargazer)
+library(openxlsx)
 # Este es mi token de Banxico SIE-API:
 token="6e3148e94cb64e275fba419d765c38efb1fcb1455f5e963aef3119fee50843b7"
 # Activamos el token y hacemos login con Banxico:
@@ -45,6 +46,10 @@ Cetes de 28 días: `SF45470`
 # Extracción de datos de los CETES de 28 días en mercado secundario:
 cetes28 = getSeriesData("SF45470", startDate = "2003-05-16", endDate = "2024-07-09")
 cetes28=as.data.frame(cetes28$SF45470)
+# Generamos la tabla general fusionada con la función merge:
+tablaGeneral=merge(cetes28, tcFIX, by="date")
+# Cambiamos los nombres de las columnas:
+colnames(tablaGeneral)=c("Fecha","cetes28","tcFIX")
 ```
 
 # Análisis de datos
@@ -59,7 +64,7 @@ Gráfica de la tasa de CETES a 28 días en mercado secundario:
 # Creamos el objeto tipo plotly:
 figCETES=plot_ly()
 # Añadimos la serie de datos de los CETES:
-figCETES=add_trace(figCETES, x=~date, y=~value, data=cetes28,
+figCETES=add_trace(figCETES, x=~Fecha, y=~cetes28, data=tablaGeneral,
                    name="CETES 28 días", type="scatter", mode="lines")
 # Le damos formato a nuestra gráfica:
 figCETES=layout(figCETES, 
@@ -169,6 +174,42 @@ figuraDispersion=layout(figuraDispersion,
 figuraDispersion
 ```
 
+# Análisis estadístico
+
+Realizamos un cálculo del coeficiente de correlación:
+```{r}
+# Realizamos un análisis de correlación entre las variables:
+correlacion=cor(tablaGeneral$cetes28, tablaGeneral$tcFIX)
+
+correlacion
+```
+
+Realizamos una tabla en donde se presente el resumen como promedio y desviación estándar de las variables:
+
+```{r}
+# Creamos la tabla de resumen:
+tablaResumen=summary(tablaGeneral)
+tablaResumen
+```
+
+Hacemos lo anterior pero con la librería stargazer. Esta librería nos permite realizar tablas de datos más estilizadas que puedan exportarse a un archivo de word o excel. Si queremos que se imprima la tabla en una página web, en un word o en un excel, debemos utilizar el argument type como html. **NOTA:** del objeto tablaGeneral solo nos interesan las columnas 2 a 3 por que queremos un resumen de esas variables y no de la fecha
+
+```{r tablaStargazer, results="asis"}
+# Creamos la tabla de resumen con stargazer:
+stargazer(tablaGeneral[,2:3], 
+          type="html",
+          out=c("tablaResumen.xls","tablaResumen.doc")
+          )
+```
+
+Si queremos previsualizar directamente en el código la tabla de resultados, la opción type será "text":
+
+```{r tablaStargazer2, results="asis"}
+# Creamos la tabla de resumen con stargazer:
+stargazer(tablaGeneral[,2:3], 
+          type="text"
+          )
+```
 
 
 

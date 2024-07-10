@@ -1,0 +1,72 @@
+---
+title: "Análisis del precio del arroz"
+author: "Dr. Oscar V. De la Torre Torres"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(siebanxicor)
+library(dplyr)
+library(plotly)
+library(DT)
+library(stargazer)
+library(openxlsx)
+```
+
+# Introducción
+
+En estas notas en línea hacemos un análisis del precio del arroz en México. Importamos los datos:
+
+```{r}
+# Importamos los datos del precio del arroz:
+arroz=read.xlsx("datosArroz.xlsx")
+arroz$Fecha=as.Date(arroz$Fecha,origin="1899-12-30")
+```
+
+# Desarrollo
+
+## Filtrado con DPLYR
+
+Lo que queremos es una tabla promedio del precio del histórico por fecha del arroz en todas sus especies y todos sus orígenes y destinos:
+
+```{r}
+serieTiempoArroz=arroz %>% group_by(Fecha) %>% summarise(precioMedio=mean(Precio.Frecuente),
+          desvEst=sd(Precio.Frecuente),
+          minimo=min(Precio.Frecuente),
+          maximo=max(Precio.Frecuente))
+```
+
+Ahora hacemos un panel de datos en donde 
+```{r}
+panelArroz=arroz %>% group_by(Producto,Fecha) %>% summarise(precioMedio=mean(Precio.Frecuente),
+          desvEst=sd(Precio.Frecuente),
+          minimo=min(Precio.Frecuente),
+          maximo=max(Precio.Frecuente))
+```
+
+Ahora exportamos nuestro panel o serie de tiempo a un archivo de Excel:
+
+```{r}
+write.xlsx(panelArroz,"panelArroz.xlsx")
+```
+
+Filtramos todos los datos de precios de arroz para que solo presente fechas y datos posteriores al 27 de mayo del 2024:
+
+```{r}
+arrozFiltrado=arroz %>% filter(Fecha>="2024-05-01")
+```
+
+Queremos contar los registros de precio por tipo de arroz:
+
+```{r}
+conteoPrecios= arroz %>% count(Producto)
+```
+
+# Conclusiones
+
+bla bla bla
