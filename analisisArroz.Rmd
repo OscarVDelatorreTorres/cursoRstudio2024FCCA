@@ -6,6 +6,10 @@ output:
   html_document:
     toc: TRUE
     toc_float: TRUE
+    number_sections: TRUE
+  word_document:
+    toc: TRUE
+    number_sections: TRUE
 ---
 
 ```{r setup, include=FALSE}
@@ -66,6 +70,32 @@ Queremos contar los registros de precio por tipo de arroz:
 ```{r}
 conteoPrecios= arroz %>% count(Producto)
 ```
+
+La siguiente gráfica presenta el valor histórico del precio promedio del arroz a nivel nacional:
+
+```{r}
+# Creamos el objeto figura:
+figura1=plot_ly()
+# Añadimos el precio promedio:
+figura1=add_trace(figura1,x=~Fecha,y=~precioMedio,data=serieTiempoArroz,
+                  type="scatter",mode="lines",name="Precio promedio del arroz")
+# Añadimos el precio mínimo:
+figura1=add_trace(figura1,x=~Fecha,y=~minimo,data=serieTiempoArroz,
+                  type="scatter",mode="lines",name="Precio mínimo del arroz")
+# Añadimos el precio máximo:
+figura1=add_trace(figura1,x=~Fecha,y=~maximo,data=serieTiempoArroz,
+                  type="scatter",mode="lines",name="Precio máximo del arroz")
+# Configuramos el formato básico de la gráfica:
+figura1=layout(figura1,title="Precio histórico del arroz en México",
+               xaxis=list(title="Fecha",
+                          rangeslider = list(type = "date")
+                          ),
+               yaxis=list(title="Precio del arroz ($)")
+               )
+figura1
+```
+
+
 
 # Conclusiones
 
