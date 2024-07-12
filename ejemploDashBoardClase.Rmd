@@ -1,0 +1,120 @@
+---
+title: "Análisis del mercado del arroz mexicano y de variables financieras"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(plotly)
+library(openxlsx)
+library(kableExtra)
+library(DT)
+library(stargazer)
+library(siebanxicor)
+# Este es mi token de Banxico SIE-API:
+token="6e3148e94cb64e275fba419d765c38efb1fcb1455f5e963aef3119fee50843b7"
+# Activamos el token y hacemos login con Banxico:
+setToken(token)
+```
+
+
+Inicio {data-icon="fa-home"}
+=====================================
+
+Bienvenid@ a este tablero de análisis de datos del mercado del arroz e información financiera.
+
+En la página mercado arroz se presenta un análisis de datos y gráfico delos precios del arroz de las principales especies en orígenes y destinos relevantes en el mercado mexicano.
+
+En la página tipo de cambio FIX se expone la gráfica y datos del tipo de cambio FIX.
+
+La página legal hace sugerencias y recomendaciones en relación a la responsabilidad del uso de la información por parte de las y los usuarios.
+
+Mercado arroz {data-icon="fa-line-chart" data-navmenu="Mercados"}
+=====================================
+Mercado del arroz mexicano (precio promedio).
+
+```{r datosArroz, echo=FALSE}
+# Importamos los datos del precio del arroz:
+arroz=read.xlsx("datosArroz.xlsx")
+# Convertimos la columna fecha a tipo Date:
+arroz$Fecha=as.Date(arroz$Fecha,origin="1899-12-30")
+# Calculamos el precio promedio histórico de todas las especies de arroz:
+serieTiempoArroz=arroz %>% group_by(Fecha) %>% summarise(precioMedio=mean(Precio.Frecuente),
+          desvEst=sd(Precio.Frecuente),
+          minimo=min(Precio.Frecuente),
+          maximo=max(Precio.Frecuente))
+```
+
+Datos {data-width=500}
+-------------------------------------
+### Tabla de datos (todos las especies, orígenes y destinos)
+```{r datosArroz2, echo=FALSE}
+datatable(serieTiempoArroz)
+```
+
+
+Gráfica {data-width=500}
+-------------------------------------
+### Gráfica de precio promedio del arroz
+
+```{r datosArroz3, echo=FALSE}
+# Creamos el objeto figura:
+figura1=plot_ly()
+# Añadimos el precio promedio:
+figura1=add_trace(figura1,x=~Fecha,y=~precioMedio,data=serieTiempoArroz,
+                  type="scatter",mode="lines",name="Precio promedio del arroz")
+# Añadimos el precio mínimo:
+figura1=add_trace(figura1,x=~Fecha,y=~minimo,data=serieTiempoArroz,
+                  type="scatter",mode="lines",name="Precio mínimo del arroz")
+# Añadimos el precio máximo:
+figura1=add_trace(figura1,x=~Fecha,y=~maximo,data=serieTiempoArroz,
+                  type="scatter",mode="lines",name="Precio máximo del arroz")
+# Configuramos el formato básico de la gráfica:
+figura1=layout(figura1,title="Precio histórico del arroz en México",
+               xaxis=list(title="Fecha",
+                          rangeslider = list(type = "date")
+                          ),
+               yaxis=list(title="Precio del arroz ($)")
+               )
+figura1
+```
+
+T.C. FIX {data-icon="fa-bank" data-navmenu="Mercados" data-orientation="rows"}
+=====================================
+
+### Gráfica histórica del tipo de cambio FIX
+Esta es la gráfica histórica del tipo de cambio FIX publicado por el Banco de México.
+
+```{r tcFIX1, echo=FALSE}
+# Extracción de datos del tipo de cambio FIX:
+tcFIX = getSeriesData("SF43718", startDate = "2003-05-16", endDate = "2024-07-09")
+tcFIX=as.data.frame(tcFIX$SF43718)
+```
+
+```{r tcFIX2, echo=FALSE}
+# Creamos el objeto tipo plotly:
+figFIX=plot_ly()
+# Añadimos la serie de datos del tipo de cambio FIX:
+figFIX=add_trace(figFIX, x=~date, y=~value, data=tcFIX,
+                   name="T.C. FIX", type="scatter", mode="lines")
+# Le damos formato a nuestra gráfica:
+figFIX=layout(figFIX, 
+                title="Tipo de cambio FIX",
+                xaxis=list(title="Fecha (diario)"), 
+                yaxis=list(title="Pesos por dólar"))
+figFIX
+```
+
+### Tabla de datos del T.C. FIX
+
+```{r tcFIX3, echo=FALSE}
+datatable(tcFIX)
+```
+
+Legal {data-icon="fa-legal"}
+=====================================
+
+Legal.
