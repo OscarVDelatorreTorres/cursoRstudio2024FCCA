@@ -1,0 +1,47 @@
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    social: menu
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(plotly)
+library(openxlsx)
+library(kableExtra)
+library(DT)
+library(shinyWidgets)
+library(stargazer)
+```
+
+Página inicial {data-icon="fa-line-chart" data-navmenu="Inicio"}
+=====================================
+
+
+Página2 {data-icon="fa-newspaper" data-navmenu="Inicio" .tabset .tabset-fade}
+=====================================
+
+
+Datos de análisis {data-icon="fa-line-chart" data-navmenu="Datos"}
+=====================================
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+
+```
