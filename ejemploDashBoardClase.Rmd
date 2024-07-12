@@ -82,7 +82,7 @@ figura1=layout(figura1,title="Precio histórico del arroz en México",
 figura1
 ```
 
-T.C. FIX {data-icon="fa-bank" data-navmenu="Mercados" data-orientation="rows"}
+T.C. FIX {data-icon="fa-bank" data-navmenu="Mercados"}
 =====================================
 
 ### Gráfica histórica del tipo de cambio FIX
