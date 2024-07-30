@@ -82,9 +82,11 @@ figura1=layout(figura1,title="Precio histórico del arroz en México",
 figura1
 ```
 
-T.C. FIX {data-icon="fa-bank" data-navmenu="Mercados"}
+T.C. FIX {data-icon="fa-bank" data-navmenu="Mercados" data-orientation=rows}
 =====================================
 
+Row {data-height=500}
+-------------------------------------
 ### Gráfica histórica del tipo de cambio FIX
 Esta es la gráfica histórica del tipo de cambio FIX publicado por el Banco de México.
 
@@ -108,6 +110,8 @@ figFIX=layout(figFIX,
 figFIX
 ```
 
+Row {data-height=500}
+-------------------------------------
 ### Tabla de datos del T.C. FIX
 
 ```{r tcFIX3, echo=FALSE}

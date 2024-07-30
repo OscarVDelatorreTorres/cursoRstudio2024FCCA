@@ -1,0 +1,73 @@
+---
+title: "Presentación del T.C. FIX"
+author: "Dr. Oscar V. De la Torre Torres"
+date: "`r Sys.Date()`"
+output:
+  slidy_presentation:
+    duration: 1 
+  ioslides_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(plotly)
+library(openxlsx)
+library(kableExtra)
+library(DT)
+library(stargazer)
+library(siebanxicor)
+# Este es mi token de Banxico SIE-API:
+token="6e3148e94cb64e275fba419d765c38efb1fcb1455f5e963aef3119fee50843b7"
+# Activamos el token y hacemos login con Banxico:
+setToken(token)
+```
+
+# Ejemplo de presentación con datos del Banxico
+
+## Introducción
+
+En este trabajo mostramos cómo utilizar presentaciones en R Markdown con datos del Banxico.
+
+## Datos del tipo de cambio FIX
+
+En este código vemos cómo descrgar datos del T.C. FIX desde las APIs del Banxico. Necesitamos configurar previamente nuestro token con la función setToken(["token Banxico"]):
+
+```{r tcFIX1}
+# Extracción de datos del tipo de cambio FIX:
+tcFIX = getSeriesData("SF43718", startDate = "2003-05-16", endDate = "2024-07-09")
+tcFIX=as.data.frame(tcFIX$SF43718)
+```
+
+## Tabla de datos
+
+Esta es la tabla resultante:
+
+```{r tcFIX2, echo=FALSE}
+datatable(tcFIX)
+```
+
+## Gráfica
+
+Esta es la gráfica de los datos:
+```{r tcFIX3, echo=FALSE}
+# Creamos el objeto tipo plotly:
+figFIX=plot_ly()
+# Añadimos la serie de datos del tipo de cambio FIX:
+figFIX=add_trace(figFIX, x=~date, y=~value, data=tcFIX,
+                   name="T.C. FIX", type="scatter", mode="lines")
+# Le damos formato a nuestra gráfica:
+figFIX=layout(figFIX, 
+                title="Tipo de cambio FIX",
+                xaxis=list(title="Fecha (diario)"), 
+                yaxis=list(title="Pesos por dólar"))
+figFIX
+```
+
+## Gráfica incrustada
+
+![Figura 1: Ejemplo de Logo FCCCA](imagen.jpeg){width=15%}
+
+
+## You tube incrustado
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/kCqwj_fDWO8?si=ZguETL_m98kmjSZR" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
